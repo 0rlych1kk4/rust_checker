@@ -1,20 +1,29 @@
 [package]
 name = "rust_checker"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+description = "A modular Rust code validation tool with HTML, JSON, SVG badge, and JUnit XML report export."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/0rlych1kk4/rust_checker"
+keywords = ["rust", "lint", "validator", "cli", "report"]
+categories = ["development-tools", "code-analysis"]
+exclude = ["/target", "*.DS_Store"]
 
 [dependencies]
 chrono = "0.4"
-serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 actix-web = "4"
 tokio = { version = "1", features = ["full"] }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
+colored = "2.0"
 
 [[bin]]
 name = "install_git_hook"
 path = "scripts/install_git_hook.rs"
+
+[[bin]]
 name = "web"
 path = "src/bin/web.rs"
