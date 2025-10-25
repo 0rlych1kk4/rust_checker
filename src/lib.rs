@@ -1,17 +1,19 @@
 use chrono::Utc;
 use std::fs;
 
-// Expose internal modules to the library users and binaries
+// Expose all internal modules so binaries and external users can access them
 pub mod config;
 pub mod unused_checker;
 pub mod rules;
 pub mod tooling;
 pub mod fixer;
 pub mod plugin;
-pub mod report; // ensure reports (html, junit, badge) are accessible if needed
+pub mod scanner; // added for binary imports
+pub mod web;     // added for binary imports
+pub mod report;  // now points to src/report/mod.rs (with html, junit, badge submodules)
 
-use unused_checker::check_unused_imports;
 use rules::RuleConfig;
+use unused_checker::check_unused_imports;
 
 /// Validate a file based on rules provided in RuleConfig
 pub fn validate_rust_file(file_path: &str, config: &RuleConfig) -> Result<(), String> {

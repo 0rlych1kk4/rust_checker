@@ -1,13 +1,17 @@
 use serde::Serialize;
 
-#[derive(Serialize)]
+pub mod badge;
+pub mod html;
+pub mod junit;
+
+#[derive(Serialize, Debug, Clone)]
 pub struct FileValidationResult {
     pub file: String,
     pub passed: bool,
     pub error: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Clone)]
 pub struct ValidationSummary {
     pub total_files: usize,
     pub passed: usize,
@@ -17,8 +21,8 @@ pub struct ValidationSummary {
 
 pub fn print_json_report(summary: &ValidationSummary) {
     match serde_json::to_string_pretty(summary) {
-        Ok(json) => println!("{}", json),
-        Err(e) => eprintln!("Failed to serialize report: {}", e),
+        Ok(json) => println!("{json}"),
+        Err(e) => eprintln!("Failed to serialize report: {e}"),
     }
 }
 
