@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/0rlych1kk4/rust_checker"
 keywords = ["rust", "lint", "validator", "cli", "report"]
-categories = ["development-tools", "code-analysis"]
+categories = ["command-line-utilities", "development-tools::testing"]
 exclude = ["/target", "*.DS_Store"]
 
 [dependencies]
