@@ -1,16 +1,16 @@
 use chrono::Utc;
 use std::fs;
 
-// Expose all internal modules so binaries and external users can access them
+// Expose internal modules so binaries and external users can import them.
 pub mod config;
-pub mod unused_checker;
+pub mod report;          // html, badge, junit exporters (via src/report/mod.rs)
 pub mod rules;
+pub mod scanner;         // file system scanner
 pub mod tooling;
 pub mod fixer;
 pub mod plugin;
-pub mod scanner; // added for binary imports
-pub mod web;     // added for binary imports
-pub mod report;  // now points to src/report/mod.rs (with html, junit, badge submodules)
+pub mod unused_checker;
+pub mod web;             // actix-web dashboard (src/web/mod.rs)
 
 use rules::RuleConfig;
 use unused_checker::check_unused_imports;
