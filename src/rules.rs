@@ -1,4 +1,4 @@
-use crate::config::RuleConfig as FileRuleConfig;
+// src/rules.rs
 
 #[derive(Debug, Clone)]
 pub struct RuleConfig {
@@ -26,7 +26,12 @@ impl RuleConfig {
         }
     }
 
-    pub fn from_args_and_config(args: &[String], file: Option<FileRuleConfig>) -> Self {
+    /// Merge CLI args with optional file-based config.
+    /// Expects the crate to expose `pub mod config;` with a `RuleConfig` that has `Option<bool>` fields.
+    pub fn from_args_and_config(
+        args: &[String],
+        file: Option<crate::config::RuleConfig>,
+    ) -> Self {
         let cli = Self::from_args(args);
         if let Some(cfg) = file {
             Self {
@@ -51,4 +56,3 @@ impl RuleConfig {
         }
     }
 }
-

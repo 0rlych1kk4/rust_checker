@@ -1,4 +1,4 @@
-use rust_checker::validate_rust_file;
+use rust_checker::{rules::RuleConfig, validate_rust_file};
 use std::fs::File;
 use std::io::Write;
 
@@ -8,7 +8,8 @@ fn test_validate_valid_file() {
     let mut file = File::create(&path).unwrap();
     writeln!(file, "fn main() {{ println!(\"Hello\"); }}").unwrap();
 
-    let result = validate_rust_file(&path);
+    let config = RuleConfig::default();
+    let result = validate_rust_file(&path, &config);
     assert!(result.is_ok());
 
     std::fs::remove_file(&path).unwrap(); // Clean up after test
@@ -20,9 +21,9 @@ fn test_validate_missing_main() {
     let mut file = File::create(&path).unwrap();
     writeln!(file, "fn helper() {{}}").unwrap();
 
-    let result = validate_rust_file(&path);
+    let config = RuleConfig::default();
+    let result = validate_rust_file(&path, &config);
     assert!(result.is_err());
 
     std::fs::remove_file(&path).unwrap(); // Clean up after test
 }
-

@@ -1,28 +1,31 @@
-use actix_web::{get, web, App, HttpServer, Responder, HttpResponse};
-use crate::report::{ValidationSummary, FileValidationResult};
+// src/web/mod.rs
+use crate::report::ValidationSummary;
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use std::sync::Mutex;
 
 #[get("/")]
 async fn index() -> impl Responder {
-    HttpResponse::Ok().body(" Rust Checker Web Dashboard is running!")
+    HttpResponse::Ok().body("Rust Checker Web Dashboard is running.")
 }
 
 #[get("/summary")]
-async fn summary(data: web::Data<Mutex<ValidationSummary>>) -> impl Responder {
-    let summary = data.lock().unwrap();
+async fn get_summary(data: web::Data<Mutex<ValidationSummary>>) -> impl Responder {
+    // Serialize by reference; no need to clone the summary.
+    let summary = data.lock().expect("summary lock poisoned");
     HttpResponse::Ok().json(&*summary)
 }
 
-pub async fn run_dashboard(summary: ValidationSummary) -> std::io::Result<()> {
-    let shared_data = web::Data::new(Mutex::new(summary));
+/// Starts the dashboard server and exposes the provided `ValidationSummary`.
+pub async fn run_dashboard(current: ValidationSummary) -> std::io::Result<()> {
+    let state = web::Data::new(Mutex::new(current));
+
     HttpServer::new(move || {
         App::new()
-            .app_data(shared_data.clone())
+            .app_data(state.clone())
             .service(index)
-            .service(summary)
+            .service(get_summary)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
 }
-

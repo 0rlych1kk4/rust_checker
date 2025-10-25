@@ -2,6 +2,12 @@
 name = "rust_checker"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Compliance-grade Rust code quality checker with CI/JUnit/HTML reports, auto-fixes, plugin system, and web dashboard."
+repository = "https://github.com/0rlych1kk4/rust_checker"
+readme = "README.md"
+keywords = ["rust", "lint", "ci", "compliance", "governance", "report"]
+categories = ["development-tools::lint", "command-line-utilities"]
 
 [dependencies]
 chrono = "0.4"
@@ -10,11 +16,16 @@ serde_json = "1.0"
 actix-web = "4"
 tokio = { version = "1", features = ["full"] }
 rayon = "1.8"
-serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
 
+[dev-dependencies]
+tempfile = "3"
+
+# Each binary must be declared separately
 [[bin]]
 name = "install_git_hook"
 path = "scripts/install_git_hook.rs"
+
+[[bin]]
 name = "web"
 path = "src/bin/web.rs"

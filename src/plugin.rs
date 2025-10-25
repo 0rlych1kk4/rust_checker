@@ -1,8 +1,9 @@
+// src/plugin.rs
 use std::fs::{self, write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
-/// Discovers and returns the content of all plugin files (*.rs) under /plugins
+/// Discovers and returns the content of all plugin files (*.rs) under /plugins.
 pub fn load_plugin_sources(plugin_dir: &str) -> Vec<(String, String)> {
     let mut plugins = Vec::new();
 
@@ -22,8 +23,8 @@ pub fn load_plugin_sources(plugin_dir: &str) -> Vec<(String, String)> {
     plugins
 }
 
-/// Compiles and runs plugin scripts under /plugins
-/// Expects plugins to print `ok` or `err: <msg>` to stdout
+/// Compiles and runs plugin scripts under /plugins.
+/// Each plugin should print `ok` or `err: <msg>` to stdout.
 pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), String>)> {
     let mut results = Vec::new();
 
@@ -31,7 +32,12 @@ pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), Stri
         for entry in entries.flatten() {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("rs") {
-                let plugin_name = path.file_stem().unwrap_or_default().to_string_lossy().to_string();
+                let plugin_name = path
+                    .file_stem()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string();
+
                 let binary_path = PathBuf::from(format!("target/{}_plugin", plugin_name));
 
                 let compile_status = Command::new("rustc")
@@ -42,11 +48,7 @@ pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), Stri
 
                 if let Ok(status) = compile_status {
                     if status.success() {
-                        let output = Command::new(&binary_path)
-                            .output()
-                            .map_err(|e| format!("Failed to run plugin: {}", e));
-
-                        match output {
+                        match Command::new(&binary_path).output() {
                             Ok(out) => {
                                 let stdout = String::from_utf8_lossy(&out.stdout);
                                 if stdout.trim() == "ok" {
@@ -55,7 +57,7 @@ pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), Stri
                                     results.push((plugin_name, Err(stdout.trim().to_string())));
                                 }
                             }
-                            Err(e) => results.push((plugin_name, Err(e))),
+                            Err(e) => results.push((plugin_name, Err(format!("Failed to run plugin: {}", e)))),
                         }
                     } else {
                         results.push((plugin_name, Err("Compilation failed".into())));
@@ -70,7 +72,7 @@ pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), Stri
     results
 }
 
-/// Generates a template plugin .rs file under plugins/
+/// Generates a template plugin `.rs` file under `/plugins/`.
 pub fn generate_plugin_template(name: &str) -> Result<(), String> {
     let filename = format!("plugins/{}.rs", name);
     let code = r#"fn main() {
@@ -83,4 +85,3 @@ pub fn generate_plugin_template(name: &str) -> Result<(), String> {
     write(&filename, code).map_err(|e| format!("Failed to write plugin file: {}", e))?;
     Ok(())
 }
-

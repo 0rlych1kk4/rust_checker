@@ -1,24 +1,23 @@
+// src/main.rs
+use chrono::Utc;
+use rayon::prelude::*;
 use std::env;
 use std::process::Command;
 use std::str;
+
 use rust_checker::{
-    validate_rust_file,
-    scanner::scan_rust_files,
-    rules::RuleConfig,
-    report::{
-        FileValidationResult, ValidationSummary, print_json_report,
-        html::export_to_html,
-        badge::export_svg_badge,
-        junit::export_to_junit_xml,
-    },
-    tooling::{run_fmt_check, run_clippy_check},
     config::Config,
     fixer::auto_fix_unused_imports,
-    plugin::{load_plugin_sources, compile_and_run_plugins, generate_plugin_template},
+    plugin::{compile_and_run_plugins, generate_plugin_template},
+    report::{
+        badge::export_svg_badge, html::export_to_html, junit::export_to_junit_xml,
+        print_json_report, FileValidationResult, ValidationSummary,
+    },
+    rules::RuleConfig,
+    scanner::scan_rust_files,
+    tooling::{run_clippy_check, run_fmt_check},
+    validate_rust_file,
 };
-use chrono::Utc;
-use colored::*;
-use rayon::prelude::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -38,16 +37,16 @@ fn main() {
     }
 
     if args.len() < 2 {
-        eprintln!("{}", "Usage: cargo run -- <path_to_rust_project> [flags]".red());
-        eprintln!("{}", "\nOptional flags:".blue());
+        eprintln!("Usage: cargo run -- <path_to_rust_project> [flags]");
+        eprintln!("\nOptional flags:");
         eprintln!("  --skip-main             Skip `fn main` check");
         eprintln!("  --allow-unused-var      Allow `let _` pattern");
         eprintln!("  --allow-unused-import   Allow unused `use` statements");
         eprintln!("  --json                  Output report as JSON");
         eprintln!("  --check-fmt             Run `cargo fmt --check`");
-        eprintln!("  --check-clippy          Run `cargo clippy --quiet -- -Dwarnings`");
+        eprintln!("  --check-clippy          Run `cargo clippy --quiet -- -D warnings`");
         eprintln!("  --fix                   Auto-fix unused imports (heuristic)");
-        eprintln!("  --gen-plugin <name>     Scaffold a new plugin in /plugins\n");
+        eprintln!("  --gen-plugin <name>     Scaffold a new plugin in /plugins");
         std::process::exit(1);
     }
 
@@ -60,23 +59,24 @@ fn main() {
     let auto_fix = args.contains(&"--fix".to_string());
 
     println!(
-        "{}",
-        format!("[{}] Checking Rust project recursively at: {}\n", Utc::now(), project_path).blue()
+        "[{}] Checking Rust project recursively at: {}\n",
+        Utc::now(),
+        project_path
     );
 
     if check_fmt {
         if run_fmt_check(project_path) {
-            println!("{}", "cargo fmt check passed.".green());
+            println!("cargo fmt check passed.");
         } else {
-            eprintln!("{}", "cargo fmt check failed. Please format your code.".red());
+            eprintln!("cargo fmt check failed. Please format your code.");
         }
     }
 
     if check_clippy {
         if run_clippy_check(project_path) {
-            println!("{}", "cargo clippy check passed.".green());
+            println!("cargo clippy check passed.");
         } else {
-            eprintln!("{}", "cargo clippy check failed. Please fix lint issues.".red());
+            eprintln!("cargo clippy check failed. Please fix lint issues.");
         }
     }
 
@@ -87,16 +87,16 @@ fn main() {
         .expect("Failed to execute cargo check");
 
     if output.status.success() {
-        println!("{}", "No compilation errors found.\n".green());
+        println!("No compilation errors found.\n");
     } else {
-        println!("{}", "Compilation errors detected:".red());
+        println!("Compilation errors detected:");
         let stderr = str::from_utf8(&output.stderr).unwrap_or("Unknown error");
         parse_and_display_errors(stderr);
     }
 
     let rust_files = scan_rust_files(project_path);
     if rust_files.is_empty() {
-        println!("{}", "No .rs files found in the directory.".yellow());
+        println!("No .rs files found in the directory.");
         return;
     }
 
@@ -124,7 +124,7 @@ fn main() {
     for (file_path, result) in results {
         match result {
             Ok(_) => {
-                println!("{}", format!("{} passed validation.", file_path).green());
+                println!("{} passed validation.", file_path);
                 passed += 1;
                 output_results.push(FileValidationResult {
                     file: file_path,
@@ -133,7 +133,7 @@ fn main() {
                 });
             }
             Err(e) => {
-                eprintln!("{}", format!("{} failed validation: {}", file_path, e).red());
+                eprintln!("{} failed validation: {}", file_path, e);
                 failed += 1;
                 output_results.push(FileValidationResult {
                     file: file_path,
@@ -155,31 +155,27 @@ fn main() {
         print_json_report(&summary);
     } else {
         println!(
-            "\n{}",
-            format!(
-                "Summary: {} passed | {} failed | {} total files checked",
-                summary.passed, summary.failed, summary.total_files
-            )
-            .bold()
+            "\nSummary: {} passed | {} failed | {} total files checked",
+            summary.passed, summary.failed, summary.total_files
         );
     }
 
     if let Err(e) = export_to_html(&summary, "target/report.html") {
         eprintln!("Failed to export HTML report: {}", e);
     } else {
-        println!("{}", "HTML report saved to target/report.html".blue());
+        println!("HTML report saved to target/report.html");
     }
 
     if let Err(e) = export_svg_badge(&summary, "target/status-badge.svg") {
         eprintln!("Failed to export badge: {}", e);
     } else {
-        println!("{}", "Badge saved to target/status-badge.svg".blue());
+        println!("Badge saved to target/status-badge.svg");
     }
 
     if let Err(e) = export_to_junit_xml(&summary, "target/report.xml") {
         eprintln!("Failed to export JUnit XML report: {}", e);
     } else {
-        println!("{}", "JUnit XML report saved to target/report.xml".blue());
+        println!("JUnit XML report saved to target/report.xml");
     }
 
     let plugin_results = compile_and_run_plugins("plugins");
@@ -201,12 +197,11 @@ fn main() {
 fn parse_and_display_errors(output: &str) {
     for line in output.lines() {
         if line.contains("error:") {
-            println!("{}", format!("\n{}", line).red());
+            println!("\n{}", line);
         } else if line.contains("--> ") {
-            println!("{}", line.yellow());
+            println!("{}", line);
         } else {
             println!("  {}", line);
         }
     }
 }
-
