@@ -23,8 +23,10 @@ pub fn export_badge(passed: usize, failed: usize, output_path: &str) -> Result<(
     let mut file = File::create(path)
         .map_err(|e| format!("Failed to create badge file: {}", e))?;
 
+    // NOTE: The entire SVG is wrapped as a single *raw string literal*.
+    // Using r#""# avoids needing to escape quotes or hashtags.
     let svg = format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20">
+r#"<svg xmlns="http://www.w3.org/2000/svg" width="150" height="20">
   <linearGradient id="a" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
@@ -32,7 +34,9 @@ pub fn export_badge(passed: usize, failed: usize, output_path: &str) -> Result<(
   <rect width="150" height="20" rx="3" fill="#fff" />
   <rect width="150" height="20" fill="{color}" />
   <path fill="{color}" d="M0 0h150v20H0z"/>
-  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans, Verdana, Geneva, sans-serif" font-size="11">
+  <g fill="#fff" text-anchor="middle"
+     font-family="DejaVu Sans, Verdana, Geneva, sans-serif"
+     font-size="11">
     <text x="75" y="14">Validation {percent:.0}% Passed</text>
   </g>
 </svg>"#
