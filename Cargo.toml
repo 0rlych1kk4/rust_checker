@@ -6,8 +6,8 @@ license = "MIT"
 description = "Compliance-grade Rust code quality checker with CI/JUnit/HTML reports, auto-fixes, plugin system, and web dashboard."
 repository = "https://github.com/0rlych1kk4/rust_checker"
 readme = "README.md"
-keywords = ["rust", "lint", "ci", "compliance", "governance", "report"]
-categories = ["development-tools::lint", "command-line-utilities"]
+keywords = ["lint", "static-analysis", "cli", "rust", "code-quality"]
+categories = ["command-line-utilities", "development-tools::testing"]
 
 [dependencies]
 chrono = "0.4"
