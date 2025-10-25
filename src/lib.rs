@@ -1,19 +1,21 @@
 use chrono::Utc;
 use std::fs;
 
-// Expose internal modules so binaries and external users can import them.
+// Expose internal modules to the library users and binaries
 pub mod config;
-pub mod report;          // html, badge, junit exporters (via src/report/mod.rs)
+pub mod unused_checker;
 pub mod rules;
-pub mod scanner;         // file system scanner
 pub mod tooling;
 pub mod fixer;
 pub mod plugin;
-pub mod unused_checker;
-pub mod web;             // actix-web dashboard (src/web/mod.rs)
+pub mod report; // reports (html, junit, badge) live under report/
+pub mod scanner;
+pub mod parallel;
+pub mod summary;
+pub mod web;
 
-use rules::RuleConfig;
 use unused_checker::check_unused_imports;
+use rules::RuleConfig;
 
 /// Validate a file based on rules provided in RuleConfig
 pub fn validate_rust_file(file_path: &str, config: &RuleConfig) -> Result<(), String> {

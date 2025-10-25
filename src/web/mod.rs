@@ -1,25 +1,34 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use crate::report::{ValidationSummary, FileValidationResult};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 
-#[get("/summary")]
-async fn summary_endpoint() -> impl Responder {
-    HttpResponse::Ok().body("Rust Checker Summary API is active.")
+use crate::report::ValidationSummary;
+
+/// App state wrapper for sharing the summary with handlers.
+#[derive(Clone)]
+struct AppState {
+    summary: ValidationSummary,
 }
 
-pub async fn run_dashboard(validation_summary: ValidationSummary) -> std::io::Result<()> {
-    println!(
-        "Launching web dashboard with {} total files...",
-        validation_summary.total_files
-    );
+#[get("/summary")]
+async fn summary_route(state: web::Data<AppState>) -> impl Responder {
+    // Return JSON; change to HTML if you prefer.
+    HttpResponse::Ok().json(&state.summary)
+}
 
-    HttpServer::new(|| {
+/// Start a tiny dashboard showing the latest summary.
+///
+/// NOTE:
+/// - This is a runner function; **do not** attach `#[get]` to it. The previous
+///   error (`expected ValidationSummary, found summary`) came from putting a route
+///   attribute on a non-handler function, which turned `summary` into a unit struct.
+pub async fn run_dashboard(summary: ValidationSummary) -> std::io::Result<()> {
+    let state = AppState { summary };
+
+    HttpServer::new(move || {
         App::new()
-            .service(summary_endpoint)
-            .route("/", actix_web::web::get().to(|| async {
-                HttpResponse::Ok().body("Rust Checker Web Dashboard Running...")
-            }))
+            .app_data(web::Data::new(state.clone()))
+            .service(summary_route)
     })
-    .bind("127.0.0.1:8080")?
+    .bind(("127.0.0.1", 8080))?
     .run()
     .await
 }
