@@ -1,28 +1,25 @@
-use actix_web::{get, web, App, HttpServer, Responder, HttpResponse};
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use crate::report::{ValidationSummary, FileValidationResult};
-use std::sync::Mutex;
-
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body(" Rust Checker Web Dashboard is running!")
-}
 
 #[get("/summary")]
-async fn summary(data: web::Data<Mutex<ValidationSummary>>) -> impl Responder {
-    let summary = data.lock().unwrap();
-    HttpResponse::Ok().json(&*summary)
+async fn summary_endpoint() -> impl Responder {
+    HttpResponse::Ok().body("Rust Checker Summary API is active.")
 }
 
-pub async fn run_dashboard(summary: ValidationSummary) -> std::io::Result<()> {
-    let shared_data = web::Data::new(Mutex::new(summary));
-    HttpServer::new(move || {
+pub async fn run_dashboard(validation_summary: ValidationSummary) -> std::io::Result<()> {
+    println!(
+        "Launching web dashboard with {} total files...",
+        validation_summary.total_files
+    );
+
+    HttpServer::new(|| {
         App::new()
-            .app_data(shared_data.clone())
-            .service(index)
-            .service(summary)
+            .service(summary_endpoint)
+            .route("/", actix_web::web::get().to(|| async {
+                HttpResponse::Ok().body("Rust Checker Web Dashboard Running...")
+            }))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
 }
-

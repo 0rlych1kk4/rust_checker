@@ -1,47 +1,54 @@
-use crate::report::{ValidationSummary, FileValidationResult};
-use std::fs::{self, File};
+use super::ValidationSummary;
+use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+/// Export validation summary as an HTML report
 pub fn export_to_html(summary: &ValidationSummary, path: &str) -> Result<(), String> {
     let output_path = Path::new(path);
-    fs::create_dir_all(output_path.parent().unwrap_or(Path::new("target")))
-        .map_err(|e| format!("Failed to create output directory: {}", e))?;
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
 
-    let mut file = File::create(output_path).map_err(|e| format!("Failed to create file: {}", e))?;
+    let mut file = File::create(output_path).map_err(|e| e.to_string())?;
 
-    writeln!(file, "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Rust Checker Report</title>
-    <style>
-    body {{ font-family: Arial; background: #fdfdfd; color: #333; }}
-    h1 {{ color: #005f8a; }}
-    table {{ width: 100%; border-collapse: collapse; }}
-    th, td {{ padding: 8px; border: 1px solid #ccc; }}
-    .pass {{ background-color: #e0ffe0; }}
-    .fail {{ background-color: #ffe0e0; }}
-    </style></head><body>")?;
+    writeln!(
+        file,
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Rust Checker Report</title>
+        <style>
+        body {{ font-family: Arial; background: #fdfdfd; color: #333; }}
+        h1 {{ color: #005f8a; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ccc; padding: 8px; text-align: left; }}
+        .pass {{ background-color: #e0ffe0; }}
+        .fail {{ background-color: #ffe0e0; }}
+        </style></head><body>"
+    )
+    .map_err(|e| e.to_string())?;
 
-    writeln!(file, "<h1>Rust Checker Validation Summary</h1>")?;
+    writeln!(file, "<h1>Rust Checker Validation Summary</h1>").map_err(|e| e.to_string())?;
     writeln!(
         file,
         "<p><strong>Files Checked:</strong> {} | <strong>Passed:</strong> {} | <strong>Failed:</strong> {}</p>",
         summary.total_files, summary.passed, summary.failed
-    )?;
+    )
+    .map_err(|e| e.to_string())?;
+    writeln!(file, "<table><tr><th>File</th><th>Status</th><th>Error</th></tr>")
+        .map_err(|e| e.to_string())?;
 
-    writeln!(file, "<table><tr><th>File</th><th>Status</th><th>Error</th></tr>")?;
-    for FileValidationResult { file, passed, error } in &summary.results {
-        let class = if *passed { "pass" } else { "fail" };
+    for result in &summary.results {
+        let status = if result.passed { "PASS" } else { "FAIL" };
+        let row_class = if result.passed { "pass" } else { "fail" };
         writeln!(
             file,
-            "<tr class=\"{}\"><td>{}</td><td>{}</td><td>{}</td></tr>",
-            class,
-            file,
-            if *passed { " Passed" } else { " Failed" },
-            error.clone().unwrap_or_default()
-        )?;
+            "<tr class='{row_class}'><td>{}</td><td>{}</td><td>{}</td></tr>",
+            result.file,
+            status,
+            result.error.clone().unwrap_or_default()
+        )
+        .map_err(|e| e.to_string())?;
     }
 
-    writeln!(file, "</table></body></html>")?;
-
+    writeln!(file, "</table></body></html>").map_err(|e| e.to_string())?;
     Ok(())
 }
-
