@@ -11,8 +11,8 @@ pub fn export_to_junit_xml(summary: &ValidationSummary, path: &str) -> Result<()
             .map_err(|e| format!("Failed to create output directory: {e}"))?;
     }
 
-    let mut file = File::create(output_path)
-        .map_err(|e| format!("Failed to create JUnit XML file: {e}"))?;
+    let mut file =
+        File::create(output_path).map_err(|e| format!("Failed to create JUnit XML file: {e}"))?;
 
     writeln!(
         file,
@@ -30,20 +30,15 @@ pub fn export_to_junit_xml(summary: &ValidationSummary, path: &str) -> Result<()
         .map_err(|e| format!("Failed to write testcase header: {e}"))?;
 
         if let Some(error) = &result.error {
-            writeln!(
-                file,
-                r#"    <failure message="{}"/>"#,
-                xml_escape(error)
-            )
-            .map_err(|e| format!("Failed to write failure node: {e}"))?;
+            writeln!(file, r#"    <failure message="{}"/>"#, xml_escape(error))
+                .map_err(|e| format!("Failed to write failure node: {e}"))?;
         }
 
         writeln!(file, r#"  </testcase>"#)
             .map_err(|e| format!("Failed to write testcase footer: {e}"))?;
     }
 
-    writeln!(file, r#"</testsuite>"#)
-        .map_err(|e| format!("Failed to write footer: {e}"))?;
+    writeln!(file, r#"</testsuite>"#).map_err(|e| format!("Failed to write footer: {e}"))?;
 
     Ok(())
 }

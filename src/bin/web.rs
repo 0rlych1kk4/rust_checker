@@ -1,4 +1,4 @@
-use rust_checker::report::{ValidationSummary, FileValidationResult};
+use rust_checker::report::{FileValidationResult, ValidationSummary};
 use rust_checker::web::run_dashboard;
 
 #[tokio::main]
@@ -30,4 +30,3 @@ async fn main() -> std::io::Result<()> {
     println!(" Starting Rust Checker Web Dashboard at http://localhost:8080");
     run_dashboard(summary).await
 }
-

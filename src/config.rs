@@ -19,4 +19,3 @@ impl Config {
         toml::from_str(&content).unwrap_or_default()
     }
 }
-

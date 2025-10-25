@@ -1,5 +1,5 @@
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader};
 
 /// Removes or comments out lines suspected of unused imports
 pub fn auto_fix_unused_imports(file_path: &str) -> Result<(), String> {
@@ -21,4 +21,3 @@ pub fn auto_fix_unused_imports(file_path: &str) -> Result<(), String> {
 
     Ok(())
 }
-

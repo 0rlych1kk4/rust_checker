@@ -1,6 +1,6 @@
 [package]
 name = "rust_checker"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A modular Rust code validation tool with HTML, JSON, SVG badge, and JUnit XML report export."
 license = "MIT"
@@ -19,6 +19,7 @@ rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
 colored = "2.0"
+html-escape = "0.2"
 
 [[bin]]
 name = "install_git_hook"

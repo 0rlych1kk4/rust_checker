@@ -1,23 +1,22 @@
-use std::env;
-use std::process::Command;
-use std::str;
-use rust_checker::{
-    validate_rust_file,
-    scanner::scan_rust_files,
-    rules::RuleConfig,
-    report::{
-        FileValidationResult, ValidationSummary, print_json_report,
-        html::export_to_html,
-        badge::export_svg_badge,
-    },
-    tooling::{run_fmt_check, run_clippy_check},
-    config::Config,
-    fixer::auto_fix_unused_imports,
-    plugin::{load_plugin_sources, compile_and_run_plugins, generate_plugin_template},
-};
 use chrono::Utc;
 use colored::*;
 use rayon::prelude::*;
+use rust_checker::{
+    config::Config,
+    fixer::auto_fix_unused_imports,
+    plugin::{compile_and_run_plugins, generate_plugin_template},
+    report::{
+        badge::export_svg_badge, html::export_to_html, print_json_report, FileValidationResult,
+        ValidationSummary,
+    },
+    rules::RuleConfig,
+    scanner::scan_rust_files,
+    tooling::{run_clippy_check, run_fmt_check},
+    validate_rust_file,
+};
+use std::env;
+use std::process::Command;
+use std::str;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -37,7 +36,10 @@ fn main() {
     }
 
     if args.len() < 2 {
-        eprintln!("{}", "Usage: cargo run -- <path_to_rust_project> [flags]".red());
+        eprintln!(
+            "{}",
+            "Usage: cargo run -- <path_to_rust_project> [flags]".red()
+        );
         eprintln!("{}", "\nOptional flags:".blue());
         eprintln!("  --skip-main             Skip `fn main` check");
         eprintln!("  --allow-unused-var      Allow `let _` pattern");
@@ -60,14 +62,22 @@ fn main() {
 
     println!(
         "{}",
-        format!("[{}] Checking Rust project recursively at: {}\n", Utc::now(), project_path).blue()
+        format!(
+            "[{}] Checking Rust project recursively at: {}\n",
+            Utc::now(),
+            project_path
+        )
+        .blue()
     );
 
     if check_fmt {
         if run_fmt_check(project_path) {
             println!("{}", "cargo fmt check passed.".green());
         } else {
-            eprintln!("{}", "cargo fmt check failed. Please format your code.".red());
+            eprintln!(
+                "{}",
+                "cargo fmt check failed. Please format your code.".red()
+            );
         }
     }
 
@@ -75,7 +85,10 @@ fn main() {
         if run_clippy_check(project_path) {
             println!("{}", "cargo clippy check passed.".green());
         } else {
-            eprintln!("{}", "cargo clippy check failed. Please fix lint issues.".red());
+            eprintln!(
+                "{}",
+                "cargo clippy check failed. Please fix lint issues.".red()
+            );
         }
     }
 
@@ -132,7 +145,10 @@ fn main() {
                 });
             }
             Err(e) => {
-                eprintln!("{}", format!("{} failed validation: {}", file_path, e).red());
+                eprintln!(
+                    "{}",
+                    format!("{} failed validation: {}", file_path, e).red()
+                );
                 failed += 1;
                 output_results.push(FileValidationResult {
                     file: file_path,
@@ -202,4 +218,3 @@ fn parse_and_display_errors(output: &str) {
         }
     }
 }
-

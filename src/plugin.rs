@@ -1,5 +1,5 @@
 use std::fs::{self, write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 /// Discovers and returns the content of all plugin files (*.rs) under /plugins
@@ -31,7 +31,11 @@ pub fn compile_and_run_plugins(plugin_dir: &str) -> Vec<(String, Result<(), Stri
         for entry in entries.flatten() {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("rs") {
-                let plugin_name = path.file_stem().unwrap_or_default().to_string_lossy().to_string();
+                let plugin_name = path
+                    .file_stem()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string();
                 let binary_path = PathBuf::from(format!("target/{}_plugin", plugin_name));
 
                 let compile_status = Command::new("rustc")
@@ -83,4 +87,3 @@ pub fn generate_plugin_template(name: &str) -> Result<(), String> {
     write(&filename, code).map_err(|e| format!("Failed to write plugin file: {}", e))?;
     Ok(())
 }
-

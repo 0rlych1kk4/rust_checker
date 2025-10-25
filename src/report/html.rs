@@ -37,8 +37,11 @@ th {{ background-color: #f5f5f5; text-align: left; }}
     )
     .map_err(|e| format!("write counts: {e}"))?;
 
-    writeln!(file, "<table><tr><th>File</th><th>Status</th><th>Error</th></tr>")
-        .map_err(|e| format!("write table head: {e}"))?;
+    writeln!(
+        file,
+        "<table><tr><th>File</th><th>Status</th><th>Error</th></tr>"
+    )
+    .map_err(|e| format!("write table head: {e}"))?;
 
     for r in &summary.results {
         let status = if r.passed { "PASS" } else { "FAIL" };

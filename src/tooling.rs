@@ -23,4 +23,3 @@ pub fn run_clippy_check(path: &str) -> bool {
 
     status.success()
 }
-
